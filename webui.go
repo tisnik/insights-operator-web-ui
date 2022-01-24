@@ -474,6 +474,10 @@ func storeProfile(writer http.ResponseWriter, request *http.Request) {
 }
 
 func storeConfiguration(writer http.ResponseWriter, request *http.Request) {
+	const (
+		clusterParamName = "cluster"
+	)
+
 	err := request.ParseForm()
 	if err != nil {
 		log.Println(errorHandlingFormMessage, err)
@@ -483,7 +487,7 @@ func storeConfiguration(writer http.ResponseWriter, request *http.Request) {
 	form := request.Form
 
 	username := form.Get("username")
-	cluster := form.Get("cluster")
+	cluster := form.Get(clusterParamName)
 	reason := form.Get(reasonParameter)
 	description := form.Get("description")
 	configuration := form.Get("configuration")
