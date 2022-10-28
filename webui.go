@@ -23,7 +23,6 @@ import (
 	"github.com/tisnik/insights-operator-web-ui/types"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -248,7 +247,7 @@ func errorParsingTemplateResponse(writer http.ResponseWriter) {
 
 func sendStaticPage(writer http.ResponseWriter, filename string) {
 	// #nosec G304
-	body, err := ioutil.ReadFile(filename)
+	body, err := os.ReadFile(filename)
 	if err == nil {
 		writer.Header().Set("Server", "A Go Web Server")
 		writer.Header().Set("Content-Type", getContentType(filename))
