@@ -1,5 +1,5 @@
 /*
-Copyright © 2019, 2020 Red Hat, Inc.
+Copyright © 2019, 2020, 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package main
 
 import (
@@ -49,8 +50,12 @@ const (
 
 // URL and form parameters
 const (
-	linkParameter   = "link"
-	reasonParameter = "reason"
+	usernameParameter      = "username"
+	linkParameter          = "link"
+	reasonParameter        = "reason"
+	clusterParameter       = "cluster"
+	descriptionParameter   = "description"
+	configurationParameter = "configuration"
 )
 
 // REST API endpoints
@@ -212,17 +217,6 @@ func readConfigurationProfile(controllerURL string, apiPrefix string, profileID 
 		return nil, err
 	}
 	return &profile, nil
-}
-
-func readClusterConfigurationByID(controllerURL string, apiPrefix string, configurationID string) (*string, error) {
-	url := controllerURL + apiPrefix + "client/configuration/" + configurationID
-	body, err := performReadRequest(url)
-	if err != nil {
-		return nil, err
-	}
-
-	str := string(body)
-	return &str, nil
 }
 
 func getContentType(filename string) string {
@@ -453,12 +447,12 @@ func storeProfile(writer http.ResponseWriter, request *http.Request) {
 	form := request.Form
 
 	username := form.Get("username")
-	description := form.Get("description")
-	configuration := form.Get("configuration")
+	description := form.Get(descriptionParameter)
+	configuration := form.Get(configurationParameter)
 
 	log.Println("username", username)
-	log.Println("description", description)
-	log.Println("configuration", configuration)
+	log.Println(descriptionParameter, description)
+	log.Println(configurationParameter, configuration)
 
 	query := "username=" + url.QueryEscape(username) + "&description=" + url.QueryEscape(description)
 	url := controllerURL + APIPrefix + "client/profile?" + query
@@ -482,17 +476,17 @@ func storeConfiguration(writer http.ResponseWriter, request *http.Request) {
 	}
 	form := request.Form
 
-	username := form.Get("username")
-	cluster := form.Get("cluster")
+	username := form.Get(usernameParameter)
+	cluster := form.Get(clusterParameter)
 	reason := form.Get(reasonParameter)
-	description := form.Get("description")
-	configuration := form.Get("configuration")
+	description := form.Get(descriptionParameter)
+	configuration := form.Get(configurationParameter)
 
-	log.Println("username", username)
-	log.Println("cluster", cluster)
+	log.Println(usernameParameter, username)
+	log.Println(clusterParameter, cluster)
 	log.Println(reasonParameter, reason)
-	log.Println("description", description)
-	log.Println("configuration", configuration)
+	log.Println(descriptionParameter, description)
+	log.Println(configurationParameter, configuration)
 
 	query := "username=" + url.QueryEscape(username) + "&reason=" + url.QueryEscape(reason) + "&description=" + url.QueryEscape(description)
 	url := controllerURL + APIPrefix + "client/cluster/" + url.PathEscape(cluster) + "/configuration?" + query
