@@ -189,7 +189,7 @@ func readListOfTriggers(controllerURL, apiPrefix string, clusterName string) ([]
 	return triggers, nil
 }
 
-func readListOfAllTriggers(controllerURL string, apiPrefix string) ([]types.Trigger, error) {
+func readListOfAllTriggers(controllerURL, apiPrefix string) ([]types.Trigger, error) {
 	var triggers []types.Trigger
 	url := controllerURL + apiPrefix + "client/trigger"
 	body, err := performReadRequest(url)
