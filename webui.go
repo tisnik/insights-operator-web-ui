@@ -23,7 +23,6 @@ import (
 	"github.com/tisnik/insights-operator-web-ui/types"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -93,7 +92,7 @@ func performReadRequest(url string) ([]byte, error) {
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Expected HTTP status 200 OK, got %d", response.StatusCode)
 	}
-	body, readErr := ioutil.ReadAll(response.Body)
+	body, readErr := io.ReadAll(response.Body)
 	defer func() {
 		err := response.Body.Close()
 		if err != nil {
@@ -248,7 +247,7 @@ func errorParsingTemplateResponse(writer http.ResponseWriter) {
 
 func sendStaticPage(writer http.ResponseWriter, filename string) {
 	// #nosec G304
-	body, err := ioutil.ReadFile(filename)
+	body, err := io.ReadFile(filename)
 	if err == nil {
 		writer.Header().Set("Server", "A Go Web Server")
 		writer.Header().Set("Content-Type", getContentType(filename))
