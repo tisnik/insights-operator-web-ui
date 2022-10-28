@@ -126,7 +126,7 @@ func performWriteRequest(url, method string, payload io.Reader) error {
 	return nil
 }
 
-func readListOfClusters(controllerURL string, apiPrefix string) ([]types.Cluster, error) {
+func readListOfClusters(controllerURL, apiPrefix string) ([]types.Cluster, error) {
 	clusters := []types.Cluster{}
 
 	url := controllerURL + apiPrefix + "client/cluster"
