@@ -174,7 +174,7 @@ func readListOfConfigurations(controllerURL, apiPrefix string) ([]types.ClusterC
 	return configurations, nil
 }
 
-func readListOfTriggers(controllerURL string, apiPrefix string, clusterName string) ([]types.Trigger, error) {
+func readListOfTriggers(controllerURL, apiPrefix string, clusterName string) ([]types.Trigger, error) {
 	var triggers []types.Trigger
 	url := controllerURL + apiPrefix + "client/cluster/" + clusterName + "/trigger"
 	body, err := performReadRequest(url)
