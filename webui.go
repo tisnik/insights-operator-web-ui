@@ -204,7 +204,7 @@ func readListOfAllTriggers(controllerURL, apiPrefix string) ([]types.Trigger, er
 	return triggers, nil
 }
 
-func readConfigurationProfile(controllerURL string, apiPrefix string, profileID string) (*types.ConfigurationProfile, error) {
+func readConfigurationProfile(controllerURL, apiPrefix, profileID string) (*types.ConfigurationProfile, error) {
 	var profile types.ConfigurationProfile
 	url := controllerURL + apiPrefix + "client/profile/" + profileID
 	body, err := performReadRequest(url)
