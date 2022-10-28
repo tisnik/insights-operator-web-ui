@@ -23,7 +23,6 @@ import (
 	"github.com/tisnik/insights-operator-web-ui/types"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -84,16 +83,16 @@ func serverCommunicationError(err error) error {
 	return fmt.Errorf("Communication error with the server %v", err)
 }
 
-func performReadRequest(url string) ([]byte, error) {
+func performReadRequest(requestURL string) ([]byte, error) {
 	// #nosec G107
-	response, err := http.Get(url)
+	response, err := http.Get(requestURL)
 	if err != nil {
 		return nil, serverCommunicationError(err)
 	}
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Expected HTTP status 200 OK, got %d", response.StatusCode)
 	}
-	body, readErr := ioutil.ReadAll(response.Body)
+	body, readErr := io.ReadAll(response.Body)
 	defer func() {
 		err := response.Body.Close()
 		if err != nil {
@@ -108,10 +107,10 @@ func performReadRequest(url string) ([]byte, error) {
 	return body, nil
 }
 
-func performWriteRequest(url string, method string, payload io.Reader) error {
+func performWriteRequest(requestURL, method string, payload io.Reader) error {
 	var client http.Client
 
-	request, err := http.NewRequest(method, url, payload)
+	request, err := http.NewRequest(method, requestURL, payload)
 	if err != nil {
 		return fmt.Errorf("Error creating request %v", err)
 	}
@@ -126,11 +125,11 @@ func performWriteRequest(url string, method string, payload io.Reader) error {
 	return nil
 }
 
-func readListOfClusters(controllerURL string, apiPrefix string) ([]types.Cluster, error) {
+func readListOfClusters(controllerURL, apiPrefix string) ([]types.Cluster, error) {
 	clusters := []types.Cluster{}
 
-	url := controllerURL + apiPrefix + "client/cluster"
-	body, err := performReadRequest(url)
+	requestURL := controllerURL + apiPrefix + "client/cluster"
+	body, err := performReadRequest(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -142,11 +141,11 @@ func readListOfClusters(controllerURL string, apiPrefix string) ([]types.Cluster
 	return clusters, nil
 }
 
-func readListOfConfigurationProfiles(controllerURL string, apiPrefix string) ([]types.ConfigurationProfile, error) {
+func readListOfConfigurationProfiles(controllerURL, apiPrefix string) ([]types.ConfigurationProfile, error) {
 	profiles := []types.ConfigurationProfile{}
 
-	url := controllerURL + apiPrefix + "client/profile"
-	body, err := performReadRequest(url)
+	requestURL := controllerURL + apiPrefix + "client/profile"
+	body, err := performReadRequest(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -158,11 +157,11 @@ func readListOfConfigurationProfiles(controllerURL string, apiPrefix string) ([]
 	return profiles, nil
 }
 
-func readListOfConfigurations(controllerURL string, apiPrefix string) ([]types.ClusterConfiguration, error) {
+func readListOfConfigurations(controllerURL, apiPrefix string) ([]types.ClusterConfiguration, error) {
 	configurations := []types.ClusterConfiguration{}
 
-	url := controllerURL + apiPrefix + "client/configuration"
-	body, err := performReadRequest(url)
+	requestURL := controllerURL + apiPrefix + "client/configuration"
+	body, err := performReadRequest(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -174,10 +173,10 @@ func readListOfConfigurations(controllerURL string, apiPrefix string) ([]types.C
 	return configurations, nil
 }
 
-func readListOfTriggers(controllerURL string, apiPrefix string, clusterName string) ([]types.Trigger, error) {
+func readListOfTriggers(controllerURL, apiPrefix, clusterName string) ([]types.Trigger, error) {
 	var triggers []types.Trigger
-	url := controllerURL + apiPrefix + "client/cluster/" + clusterName + "/trigger"
-	body, err := performReadRequest(url)
+	requestURL := controllerURL + apiPrefix + "client/cluster/" + clusterName + "/trigger"
+	body, err := performReadRequest(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -189,10 +188,10 @@ func readListOfTriggers(controllerURL string, apiPrefix string, clusterName stri
 	return triggers, nil
 }
 
-func readListOfAllTriggers(controllerURL string, apiPrefix string) ([]types.Trigger, error) {
+func readListOfAllTriggers(controllerURL, apiPrefix string) ([]types.Trigger, error) {
 	var triggers []types.Trigger
-	url := controllerURL + apiPrefix + "client/trigger"
-	body, err := performReadRequest(url)
+	requestURL := controllerURL + apiPrefix + "client/trigger"
+	body, err := performReadRequest(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -204,10 +203,10 @@ func readListOfAllTriggers(controllerURL string, apiPrefix string) ([]types.Trig
 	return triggers, nil
 }
 
-func readConfigurationProfile(controllerURL string, apiPrefix string, profileID string) (*types.ConfigurationProfile, error) {
+func readConfigurationProfile(controllerURL, apiPrefix, profileID string) (*types.ConfigurationProfile, error) {
 	var profile types.ConfigurationProfile
-	url := controllerURL + apiPrefix + "client/profile/" + profileID
-	body, err := performReadRequest(url)
+	requestURL := controllerURL + apiPrefix + "client/profile/" + profileID
+	body, err := performReadRequest(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +247,7 @@ func errorParsingTemplateResponse(writer http.ResponseWriter) {
 
 func sendStaticPage(writer http.ResponseWriter, filename string) {
 	// #nosec G304
-	body, err := ioutil.ReadFile(filename)
+	body, err := os.ReadFile(filename)
 	if err == nil {
 		writer.Header().Set("Server", "A Go Web Server")
 		writer.Header().Set("Content-Type", getContentType(filename))
@@ -455,9 +454,9 @@ func storeProfile(writer http.ResponseWriter, request *http.Request) {
 	log.Println(configurationParameter, configuration)
 
 	query := "username=" + url.QueryEscape(username) + "&description=" + url.QueryEscape(description)
-	url := controllerURL + APIPrefix + "client/profile?" + query
+	requestURL := controllerURL + APIPrefix + "client/profile?" + query
 
-	err = performWriteRequest(url, http.MethodPost, strings.NewReader(configuration))
+	err = performWriteRequest(requestURL, http.MethodPost, strings.NewReader(configuration))
 	if err != nil {
 		log.Println(errorCommunicatingWithServiceMessage, err)
 		http.Redirect(writer, request, profileNotCreatedEndpoint, 301)
@@ -489,9 +488,9 @@ func storeConfiguration(writer http.ResponseWriter, request *http.Request) {
 	log.Println(configurationParameter, configuration)
 
 	query := "username=" + url.QueryEscape(username) + "&reason=" + url.QueryEscape(reason) + "&description=" + url.QueryEscape(description)
-	url := controllerURL + APIPrefix + "client/cluster/" + url.PathEscape(cluster) + "/configuration?" + query
+	requestURL := controllerURL + APIPrefix + "client/cluster/" + url.PathEscape(cluster) + "/configuration?" + query
 
-	err = performWriteRequest(url, http.MethodPost, strings.NewReader(configuration))
+	err = performWriteRequest(requestURL, http.MethodPost, strings.NewReader(configuration))
 	if err != nil {
 		log.Println(errorCommunicatingWithServiceMessage, err)
 		http.Redirect(writer, request, configurationNotCreatedEndpoint, 301)
@@ -508,8 +507,8 @@ func enableConfiguration(writer http.ResponseWriter, request *http.Request) {
 		notFoundResponse(writer)
 		return
 	}
-	url := controllerURL + APIPrefix + "client/configuration/" + configurationID[0] + "/enable"
-	err := performWriteRequest(url, http.MethodPut, nil)
+	requestURL := controllerURL + APIPrefix + "client/configuration/" + configurationID[0] + "/enable"
+	err := performWriteRequest(requestURL, http.MethodPut, nil)
 	if err != nil {
 		fmt.Println(errorCommunicatingWithServiceMessage, err)
 		return
@@ -527,8 +526,8 @@ func disableConfiguration(writer http.ResponseWriter, request *http.Request) {
 		notFoundResponse(writer)
 		return
 	}
-	url := controllerURL + APIPrefix + "client/configuration/" + configurationID[0] + "/disable"
-	err := performWriteRequest(url, http.MethodPut, nil)
+	requestURL := controllerURL + APIPrefix + "client/configuration/" + configurationID[0] + "/disable"
+	err := performWriteRequest(requestURL, http.MethodPut, nil)
 	if err != nil {
 		fmt.Println(errorCommunicatingWithServiceMessage, err)
 		return
@@ -546,9 +545,9 @@ func activateTrigger(writer http.ResponseWriter, request *http.Request) {
 		notFoundResponse(writer)
 		return
 	}
-	url := controllerURL + APIPrefix + "client/trigger/" + triggerID[0] + "/activate"
+	requestURL := controllerURL + APIPrefix + "client/trigger/" + triggerID[0] + "/activate"
 
-	err := performWriteRequest(url, http.MethodPut, nil)
+	err := performWriteRequest(requestURL, http.MethodPut, nil)
 	if err != nil {
 		fmt.Println(errorCommunicatingWithServiceMessage, err)
 		return
@@ -566,9 +565,9 @@ func deactivateTrigger(writer http.ResponseWriter, request *http.Request) {
 		notFoundResponse(writer)
 		return
 	}
-	url := controllerURL + APIPrefix + "client/trigger/" + triggerID[0] + "/deactivate"
+	requestURL := controllerURL + APIPrefix + "client/trigger/" + triggerID[0] + "/deactivate"
 
-	err := performWriteRequest(url, http.MethodPut, nil)
+	err := performWriteRequest(requestURL, http.MethodPut, nil)
 	if err != nil {
 		fmt.Println(errorCommunicatingWithServiceMessage, err)
 		return
@@ -637,10 +636,10 @@ func triggerMustGather(writer http.ResponseWriter, request *http.Request) {
 
 	query := "username=" + url.QueryEscape(username) + "&reason=" + url.QueryEscape(reason) + "&link=" + url.QueryEscape(link)
 	log.Println(query)
-	url := controllerURL + APIPrefix + "client/cluster/" + url.PathEscape(clusterName) + "/trigger/must-gather?" + query
-	log.Println(url)
+	requestURL := controllerURL + APIPrefix + "client/cluster/" + url.PathEscape(clusterName) + "/trigger/must-gather?" + query
+	log.Println(requestURL)
 
-	err = performWriteRequest(url, http.MethodPost, nil)
+	err = performWriteRequest(requestURL, http.MethodPost, nil)
 	if err != nil {
 		log.Println(errorCommunicatingWithServiceMessage, err)
 		http.Redirect(writer, request, triggerNotCreatedEndpoint, 301)
