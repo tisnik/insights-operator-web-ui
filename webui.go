@@ -158,7 +158,7 @@ func readListOfConfigurationProfiles(controllerURL string, apiPrefix string) ([]
 	return profiles, nil
 }
 
-func readListOfConfigurations(controllerURL string, apiPrefix string) ([]types.ClusterConfiguration, error) {
+func readListOfConfigurations(controllerURL, apiPrefix string) ([]types.ClusterConfiguration, error) {
 	configurations := []types.ClusterConfiguration{}
 
 	url := controllerURL + apiPrefix + "client/configuration"
